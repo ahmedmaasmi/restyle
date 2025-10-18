@@ -1,11 +1,11 @@
-import pool from '../db/index.js';
+import pool from '../db.js';
 
-export const getAllItems = async (req, res) => {
+export const getItems = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM items ORDER BY created_at DESC');
+    const result = await pool.query('SELECT * FROM items');
     res.json(result.rows);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error fetching items' });
+    res.status(500).json({ message: 'Server error' });
   }
 };

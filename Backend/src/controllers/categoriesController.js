@@ -1,16 +1,16 @@
 import supabase from '../db/index.js';
 
-export const getItems = async (req, res) => {
+export const getCategories = async (req, res) => {
   try {
     const { data, error } = await supabase
-      .from('items')   // your table name
+      .from('categories')   // your table name
       .select('*');
 
     if (error) throw error;
 
     res.status(200).json(data);
   } catch (err) {
-    console.error('Error fetching items:', err.message);
+    console.error('Error fetching categories:', err.message);
     res.status(500).json({ error: err.message });
   }
 };

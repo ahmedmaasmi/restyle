@@ -22,7 +22,6 @@ export function Navbar({ currentUser, onNavigate, onLogout, searchQuery, onSearc
     'Kids',
     'Accessories',
     'footwear',
-    ,
   ];
 
   return (
@@ -59,7 +58,13 @@ export function Navbar({ currentUser, onNavigate, onLogout, searchQuery, onSearc
               {/* Cart */}
               <button 
                 className="flex items-center gap-1 relative"
-                onClick={() => onNavigate('dashboard')}
+                onClick={() => {
+                  if (currentUser) {
+                    onNavigate('dashboard');
+                  } else {
+                    window.location.href = '/login';
+                  }
+                }}
               >
                 <ShoppingCart className="w-5 h-5 text-gray-700" />
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -210,12 +215,11 @@ export function Navbar({ currentUser, onNavigate, onLogout, searchQuery, onSearc
                 </Button>
               </>
             ) : (
-
-            <Link href="/login" className="w-full" onClick={() => setMobileMenuOpen(false)}>
-      <Button className="w-full">
-        Sign In
-      </Button>
-    </Link>
+              <Link href="/login" className="w-full" onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full">
+                  Sign In
+                </Button>
+              </Link>
             )}
           </div>
         </div>

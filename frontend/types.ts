@@ -2,7 +2,8 @@
 // Generated from PostgreSQL schema
 // Represents entities for a Vinted-like marketplace app
 
-export interface User {
+// Database types (prefixed with Db to avoid conflicts with frontend types)
+export interface DbUser {
   id: number
   full_name: string
   username: string
@@ -72,7 +73,8 @@ export interface Favorite {
   item_id: number
 }
 
-export interface Message {
+// Database Message type
+export interface DbMessage {
   id: number
   sender_id?: number
   receiver_id?: number
@@ -123,4 +125,65 @@ export interface Wallet {
   user_id: number
   balance?: number
   updated_at?: string
+}
+
+// Frontend-specific types for the React application
+
+// Frontend User type
+export interface User {
+  id: string
+  name: string
+  email: string
+  avatar?: string
+  bio?: string
+  rating?: number
+  totalSales?: number
+}
+
+// Frontend Message type
+export interface Message {
+  id: string
+  senderId: string
+  receiverId: string
+  productId: string
+  content: string
+  timestamp: Date
+  read: boolean
+}
+
+// Frontend Product type
+export interface Product {
+  id: string
+  title: string
+  description: string
+  price: number
+  images: string[]
+  category: string
+  size?: string
+  brand?: string
+  condition: string
+  sellerId: string
+  seller: User
+  favoriteCount: number
+  isFavorited: boolean
+}
+
+// Frontend Conversation type
+export interface Conversation {
+  id: string
+  otherUser: User
+  lastMessage: Message
+  product: Product
+  unreadCount: number
+}
+
+// Frontend Purchase type
+export interface Purchase {
+  id: string
+  productId: string
+  product: Product
+  buyerId: string
+  sellerId: string
+  purchaseDate: Date
+  status: 'pending' | 'shipped' | 'delivered' | 'cancelled'
 }

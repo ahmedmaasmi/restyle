@@ -8,10 +8,10 @@ import { Dashboard } from './components/Dashboard';
 import { UserProfile } from './components/UserProfile';
 import { BrowsePage } from './components/BrowsePage';
 import { FavoritesPage } from './components/FavoritesPage';
-import { AuthModal } from './components/AuthModal';
 import { ChatModal } from './components/ChatModal';
+import { useRouter } from 'next/navigation';
 import { Product, User, Message } from '../../types';
-import { mockProducts, mockUsers, currentUser as initialUser, mockPurchases, mockConversations, mockMessages } from '../lib/mock-data';
+import { mockProducts, currentUser as initialUser, mockPurchases, mockConversations, mockMessages } from '../lib/mock-data';
 import { toast, Toaster } from 'sonner';
 
 type Page = 'home' | 'product' | 'dashboard' | 'profile' | 'browse' | 'favorites' | 'login';
@@ -19,23 +19,68 @@ type Page = 'home' | 'product' | 'dashboard' | 'profile' | 'browse' | 'favorites
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(initialUser);
+  
+  // Check localStorage for user on mount
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('currentUser');
+      if (storedUser) {
+        try {
+          return JSON.parse(storedUser);
+        } catch {
+          return initialUser;
+        }
+      }
+    }
+    return initialUser;
+  });
+  
   const [products, setProducts] = useState<Product[]>(mockProducts);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showChatModal, setShowChatModal] = useState(false);
+  const router = useRouter();
   const [chatProduct, setChatProduct] = useState<Product | null>(null);
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
 
+  // Listen for login events from localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      if (typeof window !== 'undefined') {
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          try {
+            setCurrentUser(JSON.parse(storedUser));
+          } catch {
+            setCurrentUser(null);
+          }
+        } else {
+          setCurrentUser(null);
+        }
+      }
+    };
+
+    // Check on mount and listen for storage changes
+    handleStorageChange();
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom event (for same-tab updates)
+    window.addEventListener('userLogin', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userLogin', handleStorageChange);
+    };
+  }, []);
+
   const handleNavigate = (page: string, productId?: string) => {
     if (page === 'login') {
-      setShowAuthModal(true);
+      router.push('/login');
       return;
     }
 
     if ((page === 'dashboard' || page === 'profile' || page === 'favorites') && !currentUser) {
-      setShowAuthModal(true);
+      router.push('/login');
       toast.error('Please sign in to continue');
       return;
     }
@@ -54,37 +99,19 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  const handleLogin = (email: string, password: string) => {
-    // Simulated login
-    setCurrentUser(initialUser);
-    setShowAuthModal(false);
-    toast.success('Welcome back!');
-  };
-
-  const handleSignUp = (name: string, email: string, password: string) => {
-    // Simulated signup
-    const newUser: User = {
-      id: 'new-user',
-      name,
-      email,
-      avatar: 'https://i.pravatar.cc/150?img=20',
-      rating: 5.0,
-      totalSales: 0,
-    };
-    setCurrentUser(newUser);
-    setShowAuthModal(false);
-    toast.success('Account created successfully!');
-  };
 
   const handleLogout = () => {
     setCurrentUser(null);
     setCurrentPage('home');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('currentUser');
+    }
     toast.success('Logged out successfully');
   };
 
   const handleToggleFavorite = (productId: string) => {
     if (!currentUser) {
-      setShowAuthModal(true);
+      router.push('/login');
       toast.error('Please sign in to add favorites');
       return;
     }
@@ -134,9 +161,9 @@ export default function App() {
     toast.success('Item listed successfully!');
   };
 
-  const handleBuyNow = (productId: string) => {
+  const handleBuyNow = (_productId: string) => {
     if (!currentUser) {
-      setShowAuthModal(true);
+      router.push('/login');
       toast.error('Please sign in to make a purchase');
       return;
     }
@@ -144,9 +171,9 @@ export default function App() {
     toast.success('Purchase initiated! (Simulated)');
   };
 
-  const handleMessageSeller = (productId: string, sellerId: string) => {
+  const handleMessageSeller = (productId: string, _sellerId: string) => {
     if (!currentUser) {
-      setShowAuthModal(true);
+      router.push('/login');
       toast.error('Please sign in to message sellers');
       return;
     }
@@ -282,13 +309,6 @@ export default function App() {
       </main>
 
       <Footer />
-
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onLogin={handleLogin}
-        onSignUp={handleSignUp}
-      />
 
       {chatProduct && (
         <ChatModal

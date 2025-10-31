@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import supabase from './src/db/index.js';  // ✅ FIXED path
-import { getItems } from './src/controllers/itemsController.js'; // ✅ Add .js if using ES modules
-import { getCategories } from './src/controllers/categoriesController.js'; 
+import supabase from './src/db/index.js';
+import itemsRouter from './src/routes/items.js';
+import categoriesRouter from './src/routes/categories.js';
 dotenv.config();
 
 const app = express();
@@ -17,8 +17,8 @@ app.get('/users', async (req, res) => {
   res.json(data);
 });
 
-app.use('/items', getItems);
-app.use('/categories', getCategories); // ✅ FIXED to use categories route
+app.use('/items', itemsRouter);
+app.use('/categories', categoriesRouter);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

@@ -16,40 +16,27 @@ interface HomePageProps {
 export function HomePage({ products, onNavigate, onCategoryClick, onToggleFavorite }: HomePageProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const popularCategories = [
-    { 
-      name: 'Home Decor', 
-      image: 'https://images.unsplash.com/photo-1715887643348-4d8f945cb0e3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxob21lJTIwZGVjb3IlMjBwbGFudHxlbnwxfHx8fDE3NjA3MzIxMzJ8MA&ixlib=rb-4.1.0&q=80&w=1080'
-    },
-    { 
-      name: 'Health & Beauty', 
-      image: 'https://images.unsplash.com/photo-1664165786318-9af861f2a9c3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZWF1dHklMjBjb3NtZXRpY3MlMjBwcm9kdWN0c3xlbnwxfHx8fDE3NjA3ODcxNzd8MA&ixlib=rb-4.1.0&q=80&w=1080'
-    },
-    { 
-      name: 'Groceries', 
-      image: 'https://images.unsplash.com/photo-1759692072025-27bb53a75322?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMHZlZ2V0YWJsZXMlMjBncm9jZXJpZXN8ZW58MXx8fHwxNzYwNzE3MzEwfDA&ixlib=rb-4.1.0&q=80&w=1080'
-    },
-    { 
-      name: 'Sneakers', 
-      image: 'https://images.unsplash.com/photo-1719523677291-a395426c1a87?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxydW5uaW5nJTIwc2hvZXMlMjBzbmVha2Vyc3xlbnwxfHx8fDE3NjA3MTc4Mjd8MA&ixlib=rb-4.1.0&q=80&w=1080'
-    },
-    { 
-      name: 'Phone', 
-      image: 'https://images.unsplash.com/photo-1675953935267-e039f13ddd79?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzbWFydHBob25lJTIwbW9iaWxlJTIwcGhvbmV8ZW58MXx8fHwxNzYwNzU5MDYzfDA&ixlib=rb-4.1.0&q=80&w=1080'
-    },
-    { 
-      name: 'Sports', 
-      image: 'https://images.unsplash.com/photo-1602211844066-d3bb556e983b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzcG9ydHMlMjBlcXVpcG1lbnR8ZW58MXx8fHwxNzYwNzcyNzA5fDA&ixlib=rb-4.1.0&q=80&w=1080'
-    },
-    { 
-      name: 'School & Office', 
-      image: 'https://images.unsplash.com/photo-1726250527490-4682532a8481?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzY2hvb2wlMjBzdXBwbGllcyUyMG9mZmljZXxlbnwxfHx8fDE3NjA4MTYwMDN8MA&ixlib=rb-4.1.0&q=80&w=1080'
-    },
-    { 
-      name: 'Electronics', 
-      image: 'https://images.unsplash.com/photo-1603732133854-4eb5f41d1fa2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpcGhvbmUlMjBzbWFydHBob25lJTIwYmx1ZXxlbnwxfHx8fDE3NjA4MTYwMDF8MA&ixlib=rb-4.1.0&q=80&w=1080'
-    },
+  // Use the same categories as Navbar
+  const categories = [
+    'Women',
+    'Men',
+    'Kids',
+    'Accessories',
+    'footwear',
   ];
+
+  // Get images for each category from products
+  const getCategoryImage = (categoryName: string): string => {
+    const categoryProduct = products.find(p => 
+      p.category.toLowerCase() === categoryName.toLowerCase()
+    );
+    return categoryProduct?.images[0] || 'https://images.unsplash.com/photo-1634133118645-74a2adf44170?w=400';
+  };
+
+  const popularCategories = categories.map(category => ({
+    name: category,
+    image: getCategoryImage(category),
+  }));
 
   const banners = [
     {

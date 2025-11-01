@@ -13,6 +13,8 @@ import {
 } from "./ui/field"
 import { Input } from "./ui/input"
 import { toast } from "sonner";
+import { supabase } from '@/lib/utils'
+import { Loader2 } from 'lucide-react'
 
 export default function LoginForm({
   className,
@@ -22,56 +24,47 @@ export default function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Simulated login - in real app, this would call an API
+    setLoading(true);
     if (email && password) {
-      // Store user in localStorage
-      const user = {
-        id: '1',
-        name: 'Demo User',
-        email: email,
-        avatar: 'https://i.pravatar.cc/150?img=1',
-        rating: 4.8,
-        totalSales: 45,
-      };
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      
-      // Dispatch custom event for same-tab updates
-      window.dispatchEvent(new Event('userLogin'));
-      
-      toast.success('Welcome back!');
-      router.push('/');
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      setLoading(false);
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Welcome back!');
+        window.dispatchEvent(new Event('userLogin'));
+        router.push('/');
+      }
     } else {
+      setLoading(false);
       toast.error('Please enter email and password');
     }
   };
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Simulated signup - in real app, this would call an API
+    setLoading(true);
     if (name && email && password) {
-      // Store user in localStorage
-      const user = {
-        id: Date.now().toString(),
-        name: name,
-        email: email,
-        avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`,
-        rating: 5.0,
-        totalSales: 0,
-      };
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      
-      // Dispatch custom event for same-tab updates
-      window.dispatchEvent(new Event('userLogin'));
-      
-      toast.success('Account created successfully!');
-      router.push('/');
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { name } }
+      });
+      setLoading(false);
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Account created! Please check your email for confirmation.');
+        setIsSignUp(false);
+        setPassword("");
+      }
     } else {
+      setLoading(false);
       toast.error('Please fill in all fields');
     }
   };
@@ -121,7 +114,13 @@ export default function LoginForm({
                   />
                 </Field>
                 <Field>
-                  <Button className="bg-gradient-to-r from-green-700 to-green-500" type="submit">Login</Button>
+                  <Button className="bg-gradient-to-r from-green-700 to-green-500" type="submit" disabled={loading}>
+                    {loading ? (
+                      <Loader2 className="animate-spin w-5 h-5" />
+                    ) : (
+                      isSignUp ? 'Sign Up' : 'Login'
+                    )}
+                  </Button>
                 </Field>
                 <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                   Or continue with
@@ -211,7 +210,13 @@ export default function LoginForm({
                   />
                 </Field>
                 <Field>
-                  <Button className="bg-gradient-to-r from-green-700 to-green-500" type="submit">Sign Up</Button>
+                  <Button className="bg-gradient-to-r from-green-700 to-green-500" type="submit" disabled={loading}>
+                    {loading ? (
+                      <Loader2 className="animate-spin w-5 h-5" />
+                    ) : (
+                      isSignUp ? 'Sign Up' : 'Login'
+                    )}
+                  </Button>
                 </Field>
                 <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                   Or continue with

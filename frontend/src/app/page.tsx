@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { Product, User, Message } from '../../types';
 import { mockProducts, currentUser as initialUser, mockPurchases, mockConversations, mockMessages } from '../lib/mock-data';
 import { toast, Toaster } from 'sonner';
+import { supabase } from '../lib/utils';
 
 type Page = 'home' | 'product' | 'dashboard' | 'profile' | 'browse' | 'favorites' | 'login';
 
@@ -21,19 +22,7 @@ export default function App() {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   
   // Check localStorage for user on mount
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    if (typeof window !== 'undefined') {
-      const storedUser = localStorage.getItem('currentUser');
-      if (storedUser) {
-        try {
-          return JSON.parse(storedUser);
-        } catch {
-          return initialUser;
-        }
-      }
-    }
-    return initialUser;
-  });
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   const [products, setProducts] = useState<Product[]>(mockProducts);
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,31 +34,38 @@ export default function App() {
 
   // Listen for login events from localStorage changes
   useEffect(() => {
-    const handleStorageChange = () => {
-      if (typeof window !== 'undefined') {
-        const storedUser = localStorage.getItem('currentUser');
-        if (storedUser) {
-          try {
-            setCurrentUser(JSON.parse(storedUser));
-          } catch {
-            setCurrentUser(null);
-          }
-        } else {
-          setCurrentUser(null);
-        }
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        // use metadata or fetch profile if needed
+        setCurrentUser({
+          id: session.user.id,
+          name: session.user.user_metadata?.name || session.user.email || '',
+          email: session.user.email || '',
+          avatar: `https://api.dicebear.com/6.x/identicon/svg?seed=${session.user.email || ''}`,
+          rating: 5.0,
+          totalSales: 0,
+        });
+      } else {
+        setCurrentUser(null);
+      }
+    });
+    // initial fetch
+    const init = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        setCurrentUser({
+          id: data.user.id,
+          name: data.user.user_metadata?.name || data.user.email || '',
+          email: data.user.email || '',
+          avatar: `https://api.dicebear.com/6.x/identicon/svg?seed=${data.user.email || ''}`,
+          rating: 5.0,
+          totalSales: 0,
+        });
       }
     };
-
-    // Check on mount and listen for storage changes
-    handleStorageChange();
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Also listen for custom event (for same-tab updates)
-    window.addEventListener('userLogin', handleStorageChange);
-
+    init();
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('userLogin', handleStorageChange);
+      listener?.subscription?.unsubscribe();
     };
   }, []);
 
@@ -100,13 +96,15 @@ export default function App() {
   };
 
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setCurrentUser(null);
     setCurrentPage('home');
+    // feedback: toast
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('currentUser');
+      window.dispatchEvent(new Event('userLogin'));
     }
-    toast.success('Logged out successfully');
+    // optional: add toast.success('Logged out successfully');
   };
 
   const handleToggleFavorite = (productId: string) => {

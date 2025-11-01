@@ -1,16 +1,24 @@
-import supabase from '../db/index.js';
+const { supabase } = require('../db');
 
-export const getCategories = async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from('categories')   // your table name
-      .select('*');
+// Get all categories
+exports.getCategories = async (req, res) => {
+  const { data, error } = await supabase.from('categories').select('*');
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+};
 
-    if (error) throw error;
+// Add a category
+exports.addCategory = async (req, res) => {
+  const { id, name } = req.body;
+  const { data, error } = await supabase.from('categories').insert([{ id, name }]);
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+};
 
-    res.status(200).json(data);
-  } catch (err) {
-    console.error('Error fetching categories:', err.message);
-    res.status(500).json({ error: err.message });
-  }
+// Update a category name
+exports.updateCategory = async (req, res) => {
+  const { id, name } = req.body;
+  const { data, error } = await supabase.from('categories').update({ name }).eq('id', id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 };

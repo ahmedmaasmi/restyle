@@ -1,16 +1,26 @@
-import supabase from '../db/index.js';
+const { supabase } = require('../db');
 
-export const getItems = async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from('items')   // your table name
-      .select('*');
+// Get all items
+exports.getItems = async (req, res) => {
+  const { data, error } = await supabase.from('items').select('*');
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+};
 
-    if (error) throw error;
+// Add an item
+exports.addItem = async (req, res) => {
+  const { id, user_id, category_id, title, description, price, condition, brand, size, status, create_at } = req.body;
+  const { data, error } = await supabase.from('items').insert([{ id, user_id, category_id, title, description, price, condition, brand, size, status, create_at }]);
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+};
 
-    res.status(200).json(data);
-  } catch (err) {
-    console.error('Error fetching items:', err.message);
-    res.status(500).json({ error: err.message });
-  }
+// Update an item
+exports.updateItem = async (req, res) => {
+  const { id, title, description, price, condition, brand, size, status } = req.body;
+  const updateData = { title, description, price, condition, brand, size, status };
+  Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
+  const { data, error } = await supabase.from('items').update(updateData).eq('id', id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 };

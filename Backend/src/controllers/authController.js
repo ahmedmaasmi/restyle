@@ -205,16 +205,23 @@ exports.login = async (req, res) => {
 
     console.log('User found in users table. User ID:', userData.id);
 
-    // Check if user is admin - admins table uses auth user_id (UUID)
-    console.log('Checking admin status for auth user ID:', data.user.id);
+    // Check if user exists in admins table using users table ID
+    console.log('Checking admin status for user ID from users table:', userData.id);
     const { data: adminData, error: adminError } = await supabase
       .from('admins')
       .select('id, role')
-      .eq('user_id', data.user.id) // Use auth user ID (UUID) for admin lookup
-      .single();
+      .eq('user_id', userData.id) // Use users table ID for admin lookup
+      .maybeSingle(); // Use maybeSingle() instead of single() to handle no admin record gracefully
 
-    const isAdmin = adminData && !adminError;
-    console.log('Admin check result:', { isAdmin, adminData, adminError: adminError?.message });
+    // User is admin if we found a record (no error) and data exists
+    const isAdmin = adminData !== null && !adminError && adminData.id !== undefined;
+    console.log('Admin check result:', { 
+      isAdmin, 
+      hasAdminData: !!adminData, 
+      adminRole: adminData?.role || null,
+      userTableId: userData.id,
+      error: adminError?.message || null 
+    });
 
     console.log('Login successful. Returning user data and session.');
     res.json({
@@ -306,14 +313,23 @@ exports.getCurrentUser = async (req, res) => {
       return res.status(404).json({ error: 'User profile not found' });
     }
 
-    // Check if user is admin - admins table uses auth user_id (UUID)
+    // Check if user exists in admins table using users table ID
+    console.log('Checking admin status for user ID from users table:', userData.id);
     const { data: adminData, error: adminError } = await supabase
       .from('admins')
       .select('id, role')
-      .eq('user_id', user.id) // Use auth user ID (UUID) for admin lookup
-      .single();
+      .eq('user_id', userData.id) // Use users table ID for admin lookup
+      .maybeSingle(); // Use maybeSingle() instead of single() to handle no admin record gracefully
 
-    const isAdmin = adminData && !adminError;
+    // User is admin if we found a record (no error) and data exists
+    const isAdmin = adminData !== null && !adminError && adminData.id !== undefined;
+    console.log('Admin check result:', { 
+      isAdmin, 
+      hasAdminData: !!adminData, 
+      adminRole: adminData?.role || null,
+      userTableId: userData.id,
+      error: adminError?.message || null 
+    });
 
     res.json({
       id: userData.id,

@@ -251,3 +251,178 @@ export const authAPI = {
   },
 };
 
+export interface AdminUser {
+  id: string;
+  email: string;
+  full_name: string;
+  username: string;
+  avatar_url: string;
+  bio?: string;
+  rating: number;
+  created_at: string;
+}
+
+export interface Admin {
+  id: string;
+  user_id: string;
+  role: string;
+  created_at: string;
+}
+
+// Admin API functions
+export const adminAPI = {
+  // Get all users
+  getUsers: async (): Promise<AdminUser[]> => {
+    try {
+      const response = await apiRequest('/users', {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Get users error:', error);
+      throw error;
+    }
+  },
+
+  // Get all admins
+  getAdmins: async (): Promise<Admin[]> => {
+    try {
+      const response = await apiRequest('/admins', {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch admins');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Get admins error:', error);
+      throw error;
+    }
+  },
+
+  // Add admin (promote user to admin)
+  addAdmin: async (email: string, role: string = 'admin'): Promise<Admin> => {
+    try {
+      const response = await apiRequest('/admins', {
+        method: 'POST',
+        body: JSON.stringify({ email, role }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to add admin' }));
+        throw new Error(errorData.error || 'Failed to add admin');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Add admin error:', error);
+      throw error;
+    }
+  },
+
+  // Update admin role
+  updateAdminRole: async (adminId: string, role: string): Promise<Admin> => {
+    try {
+      const response = await apiRequest('/admins', {
+        method: 'PUT',
+        body: JSON.stringify({ id: adminId, role }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to update admin role' }));
+        throw new Error(errorData.error || 'Failed to update admin role');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Update admin role error:', error);
+      throw error;
+    }
+  },
+
+  // Remove admin (demote admin to regular user)
+  removeAdmin: async (adminId: string): Promise<void> => {
+    try {
+      const response = await apiRequest(`/admins/${adminId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to remove admin' }));
+        throw new Error(errorData.error || 'Failed to remove admin');
+      }
+    } catch (error) {
+      console.error('Remove admin error:', error);
+      throw error;
+    }
+  },
+};
+
+// Products API functions
+export interface ProductResponse {
+  id: number;
+  user_id: number;
+  category_id: number;
+  title: string;
+  description?: string;
+  price: number;
+  condition?: string;
+  brand?: string;
+  size?: string;
+  status?: string;
+  create_at?: string;
+}
+
+export const productsAPI = {
+  // Get all products/items
+  getProducts: async (): Promise<ProductResponse[]> => {
+    try {
+      const response = await apiRequest('/items', {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Get products error:', error);
+      throw error;
+    }
+  },
+};
+
+// Categories API functions
+export interface CategoryResponse {
+  id: number;
+  name: string;
+}
+
+export const categoriesAPI = {
+  // Get all categories
+  getCategories: async (): Promise<CategoryResponse[]> => {
+    try {
+      const response = await apiRequest('/categories', {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Get categories error:', error);
+      throw error;
+    }
+  },
+};
+

@@ -7,6 +7,15 @@ exports.getUsers = async (req, res) => {
   res.json(data);
 };
 
+// Get user by ID
+exports.getUserById = async (req, res) => {
+  const { id } = req.params;
+  const { data, error } = await supabase.from('users').select('*').eq('id', id).single();
+  if (error) return res.status(500).json({ error: error.message });
+  if (!data) return res.status(404).json({ error: 'User not found' });
+  res.json(data);
+};
+
 // Add a user (registration)
 exports.addUser = async (req, res) => {
   const { id, full_name, username, email, password_hash, avatar_url, bio, rating, created_at } = req.body;

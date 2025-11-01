@@ -18,6 +18,7 @@ const imagesRouter = require('./src/routes/images.js');
 const tagsRouter = require('./src/routes/tags.js');
 const itemTagsRouter = require('./src/routes/item_tags.js');
 const authRouter = require('./src/routes/auth.js');
+const uploadRouter = require('./src/routes/upload.js');
 dotenv.config();
 
 const app = express();
@@ -47,6 +48,10 @@ app.get('/users', async (req, res) => {
 // Auth routes
 app.use('/auth', authRouter);
 
+// Upload routes (before /users to avoid conflicts)
+app.use('/upload', uploadRouter);
+
+// API routes
 app.use('/items', itemsRouter);
 app.use('/categories', categoriesRouter);
 app.use('/favorites', favoritesRouter);
@@ -62,6 +67,9 @@ app.use('/notifications', notificationsRouter);
 app.use('/images', imagesRouter);
 app.use('/tags', tagsRouter);
 app.use('/item_tags', itemTagsRouter);
+
+// Serve uploaded files statically
+app.use('/uploads', express.static('uploads'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

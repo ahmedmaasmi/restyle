@@ -2,7 +2,23 @@ const { supabase } = require('../db');
 
 // Get all images
 exports.getImages = async (req, res) => {
-  const { data, error } = await supabase.from('images').select('*');
+  const { item_id } = req.query;
+  let query = supabase.from('images').select('*');
+  
+  // Filter by item_id if provided
+  if (item_id) {
+    query = query.eq('item_id', item_id);
+  }
+  
+  const { data, error } = await query;
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+};
+
+// Get images by item ID
+exports.getImagesByItemId = async (req, res) => {
+  const { item_id } = req.params;
+  const { data, error } = await supabase.from('images').select('*').eq('item_id', item_id);
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 };

@@ -15,6 +15,15 @@ exports.addCategory = async (req, res) => {
   res.status(201).json(data);
 };
 
+// Get category by ID
+exports.getCategoryById = async (req, res) => {
+  const { id } = req.params;
+  const { data, error } = await supabase.from('categories').select('*').eq('id', id).single();
+  if (error) return res.status(500).json({ error: error.message });
+  if (!data) return res.status(404).json({ error: 'Category not found' });
+  res.json(data);
+};
+
 // Update a category name
 exports.updateCategory = async (req, res) => {
   const { id, name } = req.body;

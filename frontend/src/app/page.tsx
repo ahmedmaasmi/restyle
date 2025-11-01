@@ -12,11 +12,14 @@ import { ChatModal } from './components/ChatModal';
 import { AuthDebug } from './components/AuthDebug';
 import { AdminDashboard } from './components/AdminDashboard';
 import { VerificationPage } from './components/VerificationPage';
+import { CartModal } from './components/CartModal';
+import { LogoutConfirmationModal } from './components/LogoutConfirmationModal';
+import { CartProvider } from '../lib/CartContext';
 import { useRouter } from 'next/navigation';
 import { Product, User, Message } from '../../types';
 import { mockProducts, currentUser as initialUser, mockPurchases, mockConversations, mockMessages } from '../lib/mock-data';
 import { toast, Toaster } from 'sonner';
-import { authAPI } from '../lib/api';
+import { authAPI, productsAPI, ProductResponse, categoriesAPI } from '../lib/api';
 
 type Page = 'home' | 'product' | 'dashboard' | 'profile' | 'browse' | 'favorites' | 'login' | 'admin' | 'verification';
 
@@ -28,9 +31,11 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [productsLoading, setProductsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [showChatModal, setShowChatModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const router = useRouter();
   const [chatProduct, setChatProduct] = useState<Product | null>(null);
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
@@ -50,11 +55,125 @@ export default function App() {
     }
   }, []);
 
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setProductsLoading(true);
+      try {
+        const items = await productsAPI.getProducts();
+        // Fetch images for each item
+        const productsWithImages: Product[] = await Promise.all(
+          items.map(async (item: ProductResponse) => {
+            // Fetch images for this item
+            try {
+              const imagesResponse = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/images?item_id=${item.id}`
+              );
+              const images = imagesResponse.ok ? await imagesResponse.json() : [];
+              
+              // Fetch category
+              const categoryResponse = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/categories/${item.category_id}`
+              );
+              let categoryName = 'Uncategorized';
+              if (categoryResponse.ok) {
+                const category = await categoryResponse.json();
+                categoryName = category.name || categoryName;
+              }
+
+              // Fetch seller/user info
+              const userResponse = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/users/${item.user_id}`
+              );
+              let seller: User = {
+                id: String(item.user_id),
+                name: 'Unknown',
+                email: '',
+                avatar: `https://api.dicebear.com/6.x/identicon/svg?seed=${item.user_id}`,
+                rating: 5.0,
+                totalSales: 0,
+              };
+              
+              if (userResponse.ok) {
+                const userData = await userResponse.json();
+                seller = {
+                  id: String(userData.id),
+                  name: userData.full_name || userData.username || 'Unknown',
+                  email: userData.email || '',
+                  avatar: userData.avatar_url || `https://api.dicebear.com/6.x/identicon/svg?seed=${userData.email}`,
+                  rating: userData.rating || 5.0,
+                  totalSales: 0,
+                };
+              }
+
+              return {
+                id: String(item.id),
+                title: item.title,
+                description: item.description || '',
+                price: item.price,
+                images: images.length > 0 ? images.map((img: any) => img.image_url) : ['https://images.unsplash.com/photo-1634133118645-74a2adf44170?w=400'],
+                category: categoryName,
+                size: item.size,
+                brand: item.brand,
+                condition: item.condition || 'Good',
+                sellerId: String(item.user_id),
+                seller,
+                favoriteCount: 0,
+                isFavorited: false,
+              };
+            } catch (error) {
+              console.error(`Error fetching details for item ${item.id}:`, error);
+              return {
+                id: String(item.id),
+                title: item.title,
+                description: item.description || '',
+                price: item.price,
+                images: ['https://images.unsplash.com/photo-1634133118645-74a2adf44170?w=400'],
+                category: 'Uncategorized',
+                size: item.size,
+                brand: item.brand,
+                condition: item.condition || 'Good',
+                sellerId: String(item.user_id),
+                seller: {
+                  id: String(item.user_id),
+                  name: 'Unknown',
+                  email: '',
+                  avatar: `https://api.dicebear.com/6.x/identicon/svg?seed=${item.user_id}`,
+                  rating: 5.0,
+                  totalSales: 0,
+                },
+                favoriteCount: 0,
+                isFavorited: false,
+              };
+            }
+          })
+        );
+        setProducts(productsWithImages);
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+        // Fallback to mock products on error
+        setProducts(mockProducts);
+      } finally {
+        setProductsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   // Check authentication status on mount and listen for login events
   useEffect(() => {
     const checkAuth = async () => {
       const user = await authAPI.getCurrentUser();
       if (user) {
+        // Explicitly check admin status from the API response
+        const isAdmin = user.isAdmin === true;
+        console.log('User auth check:', { 
+          email: user.email, 
+          isAdmin: isAdmin, 
+          adminRole: user.adminRole 
+        });
+        
         setCurrentUser({
           id: user.id,
           name: user.full_name || user.email || '',
@@ -62,7 +181,7 @@ export default function App() {
           avatar: user.avatar_url || `https://api.dicebear.com/6.x/identicon/svg?seed=${user.email}`,
           rating: user.rating || 5.0,
           totalSales: 0,
-          isAdmin: user.isAdmin || false,
+          isAdmin: isAdmin, // Explicitly set admin status
           adminRole: user.adminRole || null,
         });
       } else {
@@ -78,8 +197,15 @@ export default function App() {
     };
     window.addEventListener('userLogin', handleLogin);
 
+    // Listen for admin status changes (e.g., after promoting/demoting)
+    const handleAdminStatusChange = async () => {
+      await checkAuth();
+    };
+    window.addEventListener('adminStatusChange', handleAdminStatusChange);
+
     return () => {
       window.removeEventListener('userLogin', handleLogin);
+      window.removeEventListener('adminStatusChange', handleAdminStatusChange);
     };
   }, []);
 
@@ -109,7 +235,11 @@ export default function App() {
   };
 
   const handleCategoryClick = (category: string) => {
-    setSelectedCategory(category);
+    if (category === 'all') {
+      setSelectedCategory(undefined);
+    } else {
+      setSelectedCategory(category);
+    }
     setCurrentPage('browse');
     window.scrollTo(0, 0);
   };
@@ -120,6 +250,10 @@ export default function App() {
     setCurrentUser(null);
     setCurrentPage('home');
     toast.success('Logged out successfully');
+  };
+
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
   };
 
   const handleToggleFavorite = (productId: string) => {
@@ -233,15 +367,25 @@ export default function App() {
     }
   };
 
-  // Filter products based on search
-  const filteredProducts = searchQuery.trim()
-    ? products.filter(
-        (p) =>
-          p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.category.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : products;
+  // Filter products based on search and category
+  const filteredProducts = products.filter((p) => {
+    // Category filter
+    if (selectedCategory && p.category !== selectedCategory) {
+      return false;
+    }
+    
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      return (
+        p.title.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query)
+      );
+    }
+    
+    return true;
+  });
 
   const favoriteProducts = products.filter((p) => p.isFavorited);
   const userProducts = products.filter((p) => p.sellerId === currentUser?.id);
@@ -251,15 +395,16 @@ export default function App() {
     : null;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <Navbar
-        currentUser={currentUser}
-        onNavigate={handleNavigate}
-        onLogout={handleLogout}
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchChange}
-        onCategoryClick={handleCategoryClick}
-      />
+    <CartProvider>
+      <div className="min-h-screen bg-white flex flex-col">
+        <Navbar
+          currentUser={currentUser}
+          onNavigate={handleNavigate}
+          onLogout={handleLogoutClick}
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
+          onCategoryClick={handleCategoryClick}
+        />
 
       <main className="flex-1">
         {currentPage === 'home' && (
@@ -352,9 +497,18 @@ export default function App() {
         />
       )}
 
-      <AuthDebug />
+        <AuthDebug />
 
-      <Toaster position="top-center" richColors />
-    </div>
+        <CartModal />
+
+        <LogoutConfirmationModal
+          isOpen={showLogoutModal}
+          onClose={() => setShowLogoutModal(false)}
+          onConfirm={handleLogout}
+        />
+
+        <Toaster position="top-center" richColors />
+      </div>
+    </CartProvider>
   );
 }

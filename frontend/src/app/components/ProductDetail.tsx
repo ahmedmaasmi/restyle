@@ -1,10 +1,12 @@
 "use client";
-import { ArrowLeft, Heart, Star, MessageCircle, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Heart, Star, MessageCircle, ShoppingCart, Plus } from 'lucide-react';
 import { Product } from '../types';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { useState } from 'react';
+import { useCart } from '../../lib/CartContext';
+import { toast } from 'sonner';
 
 interface ProductDetailProps {
   product: Product;
@@ -22,6 +24,12 @@ export function ProductDetail({
   onMessageSeller,
 }: ProductDetailProps) {
   const [selectedImage, setSelectedImage] = useState(0);
+  const { addToCart, openCart } = useCart();
+
+  const handleAddToCart = () => {
+    addToCart(product);
+    toast.success('Item added to cart!');
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -129,6 +137,15 @@ export function ProductDetail({
           {/* Action Buttons */}
           <div className="space-y-3">
             <Button
+              className="w-full"
+              size="lg"
+              onClick={handleAddToCart}
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Add to Cart
+            </Button>
+            <Button
+              variant="outline"
               className="w-full"
               size="lg"
               onClick={() => onBuyNow(product.id)}

@@ -131,6 +131,8 @@ export interface Wallet {
 
 // Frontend User type
 export interface User {
+  isAdmin?: boolean;
+  adminRole?: string | null;
   id: string
   name: string
   email: string

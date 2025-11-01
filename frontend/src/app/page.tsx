@@ -9,13 +9,16 @@ import { UserProfile } from './components/UserProfile';
 import { BrowsePage } from './components/BrowsePage';
 import { FavoritesPage } from './components/FavoritesPage';
 import { ChatModal } from './components/ChatModal';
+import { AuthDebug } from './components/AuthDebug';
+import { AdminDashboard } from './components/AdminDashboard';
+import { VerificationPage } from './components/VerificationPage';
 import { useRouter } from 'next/navigation';
 import { Product, User, Message } from '../../types';
 import { mockProducts, currentUser as initialUser, mockPurchases, mockConversations, mockMessages } from '../lib/mock-data';
 import { toast, Toaster } from 'sonner';
-import { supabase } from '../lib/utils';
+import { authAPI } from '../lib/api';
 
-type Page = 'home' | 'product' | 'dashboard' | 'profile' | 'browse' | 'favorites' | 'login';
+type Page = 'home' | 'product' | 'dashboard' | 'profile' | 'browse' | 'favorites' | 'login' | 'admin' | 'verification';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
@@ -31,41 +34,52 @@ export default function App() {
   const router = useRouter();
   const [chatProduct, setChatProduct] = useState<Product | null>(null);
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
 
-  // Listen for login events from localStorage changes
+  // Check for verification email in URL
   useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        // use metadata or fetch profile if needed
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const email = params.get('verification');
+      if (email) {
+        setVerificationEmail(email);
+        setCurrentPage('verification');
+        // Clean up URL
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  }, []);
+
+  // Check authentication status on mount and listen for login events
+  useEffect(() => {
+    const checkAuth = async () => {
+      const user = await authAPI.getCurrentUser();
+      if (user) {
         setCurrentUser({
-          id: session.user.id,
-          name: session.user.user_metadata?.name || session.user.email || '',
-          email: session.user.email || '',
-          avatar: `https://api.dicebear.com/6.x/identicon/svg?seed=${session.user.email || ''}`,
-          rating: 5.0,
+          id: user.id,
+          name: user.full_name || user.email || '',
+          email: user.email,
+          avatar: user.avatar_url || `https://api.dicebear.com/6.x/identicon/svg?seed=${user.email}`,
+          rating: user.rating || 5.0,
           totalSales: 0,
+          isAdmin: user.isAdmin || false,
+          adminRole: user.adminRole || null,
         });
       } else {
         setCurrentUser(null);
       }
-    });
-    // initial fetch
-    const init = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        setCurrentUser({
-          id: data.user.id,
-          name: data.user.user_metadata?.name || data.user.email || '',
-          email: data.user.email || '',
-          avatar: `https://api.dicebear.com/6.x/identicon/svg?seed=${data.user.email || ''}`,
-          rating: 5.0,
-          totalSales: 0,
-        });
-      }
     };
-    init();
+
+    checkAuth();
+
+    // Listen for login events
+    const handleLogin = async () => {
+      await checkAuth();
+    };
+    window.addEventListener('userLogin', handleLogin);
+
     return () => {
-      listener?.subscription?.unsubscribe();
+      window.removeEventListener('userLogin', handleLogin);
     };
   }, []);
 
@@ -75,9 +89,14 @@ export default function App() {
       return;
     }
 
-    if ((page === 'dashboard' || page === 'profile' || page === 'favorites') && !currentUser) {
+    if ((page === 'dashboard' || page === 'profile' || page === 'favorites' || page === 'admin') && !currentUser) {
       router.push('/login');
       toast.error('Please sign in to continue');
+      return;
+    }
+
+    if (page === 'admin' && currentUser && !currentUser.isAdmin) {
+      toast.error('Access denied. Admin privileges required.');
       return;
     }
 
@@ -97,14 +116,10 @@ export default function App() {
 
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await authAPI.logout();
     setCurrentUser(null);
     setCurrentPage('home');
-    // feedback: toast
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new Event('userLogin'));
-    }
-    // optional: add toast.success('Logged out successfully');
+    toast.success('Logged out successfully');
   };
 
   const handleToggleFavorite = (productId: string) => {
@@ -304,6 +319,24 @@ export default function App() {
             onToggleFavorite={handleToggleFavorite}
           />
         )}
+
+        {currentPage === 'admin' && currentUser && (
+          <AdminDashboard
+            onNavigate={handleNavigate}
+          />
+        )}
+
+        {currentPage === 'verification' && verificationEmail && (
+          <VerificationPage
+            email={verificationEmail}
+            onVerified={() => {
+              setVerificationEmail(null);
+              handleNavigate('home');
+              // Check auth again to update user state
+              window.dispatchEvent(new Event('userLogin'));
+            }}
+          />
+        )}
       </main>
 
       <Footer />
@@ -318,6 +351,8 @@ export default function App() {
           onSendMessage={handleSendMessage}
         />
       )}
+
+      <AuthDebug />
 
       <Toaster position="top-center" richColors />
     </div>

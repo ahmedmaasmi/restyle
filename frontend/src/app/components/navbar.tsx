@@ -1,4 +1,4 @@
-import { Search, MapPin, ShoppingCart, User, Menu, X, ChevronDown, Gift, Tv } from 'lucide-react';
+import { Search, MapPin, ShoppingCart, User, Menu, X, ChevronDown, Gift, Tv, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -76,6 +76,17 @@ export function Navbar({ currentUser, onNavigate, onLogout, searchQuery, onSearc
               {/* Sign In */}
               {currentUser ? (
                 <div className="flex items-center gap-2">
+                  {currentUser.isAdmin && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onNavigate('admin')}
+                      className="flex items-center gap-1 text-sm"
+                    >
+                      <Shield className="w-4 h-4" />
+                      Admin
+                    </Button>
+                  )}
                   <img
                     src={currentUser.avatar}
                     alt={currentUser.name}

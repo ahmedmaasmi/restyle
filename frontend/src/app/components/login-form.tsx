@@ -13,7 +13,7 @@ import {
 } from "./ui/field"
 import { Input } from "./ui/input"
 import { toast } from "sonner";
-import { supabase } from '@/lib/utils'
+import { authAPI } from '@/lib/api'
 import { Loader2 } from 'lucide-react'
 
 export default function LoginForm({
@@ -30,15 +30,37 @@ export default function LoginForm({
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log('=== LOGIN FORM SUBMIT ===');
+    console.log('Email:', email);
+    console.log('Has password:', !!password);
+    
     if (email && password) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      setLoading(false);
-      if (error) {
-        toast.error(error.message);
-      } else {
+      try {
+        console.log('Calling authAPI.login...');
+        const result = await authAPI.login(email, password);
+        console.log('Login result:', result);
+        
+        if (!result.session) {
+          console.error('No session in login result!');
+          toast.error('Login failed: No session returned');
+          return;
+        }
+        
+        console.log('Login successful, dispatching userLogin event and redirecting...');
         toast.success('Welcome back!');
         window.dispatchEvent(new Event('userLogin'));
         router.push('/');
+      } catch (error: unknown) {
+        console.error('=== LOGIN FORM ERROR ===');
+        console.error('Error:', error);
+        if (error instanceof Error) {
+          console.error('Error message:', error.message);
+          toast.error(error.message || 'Login failed');
+        } else {
+          toast.error('Login failed: Unknown error');
+        }
+      } finally {
+        setLoading(false);
       }
     } else {
       setLoading(false);
@@ -50,18 +72,30 @@ export default function LoginForm({
     e.preventDefault();
     setLoading(true);
     if (name && email && password) {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { name } }
-      });
-      setLoading(false);
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success('Account created! Please check your email for confirmation.');
-        setIsSignUp(false);
-        setPassword("");
+      try {
+        console.log('Starting registration...');
+        const result = await authAPI.register(email, password, name);
+        console.log('Registration result:', result);
+        
+        // If session is null or requiresVerification is true, user needs to verify email
+        if (!result.session || result.requiresVerification || result.message) {
+          // Redirect to verification page immediately
+          console.log('Redirecting to verification page...');
+          router.push(`/?verification=${encodeURIComponent(email)}`);
+          toast.success('Account created! Please check your email for verification.');
+          return; // Exit early to prevent further execution
+        }
+        
+        // User is verified and has session
+        console.log('User verified, redirecting to home...');
+        toast.success('Account created successfully!');
+        window.dispatchEvent(new Event('userLogin'));
+        router.push('/');
+      } catch (error: any) {
+        console.error('Registration error in form:', error);
+        toast.error(error.message || 'Sign up failed');
+      } finally {
+        setLoading(false);
       }
     } else {
       setLoading(false);

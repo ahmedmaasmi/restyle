@@ -16,7 +16,7 @@ export default function HeroSlider() {
       price: "From $50,769*",
       desc: "All-6 chip, Superfine Increment History. Biggest Price Drop",
       image: "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8aXBob25lfGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=500",
-      bg: "from-blue-900 to-purple-700",
+      bg: "from-green-900 to-green-700",
     },
     {
       id: 2,
@@ -24,7 +24,7 @@ export default function HeroSlider() {
       price: "Up to 50% OFF",
       desc: "Grab your favourite fashion & shoes with amazing discounts!",
       image: "https://images.unsplash.com/photo-1509959246013-d2e0f4d0876a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2hvb2VzfGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=500",
-      bg: "from-cyan-400 to-blue-500",
+      bg: "from-green-400 to-green-600",
     },
     {
       id: 3,
@@ -78,7 +78,7 @@ export default function HeroSlider() {
                   <ButtonHover 
                     onClick={() => {}}
                     variant="secondary"
-                    className="bg-white text-blue-700 px-6 py-2 rounded-full font-medium hover:bg-gray-100"
+                    className="bg-white text-green-700 px-6 py-2 rounded-full font-medium hover:bg-gray-100"
                   >
                     Shop Now
                   </ButtonHover>

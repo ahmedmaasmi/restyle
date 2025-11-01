@@ -59,7 +59,7 @@ export function ProductDetail({
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 ${
-                    selectedImage === index ? 'border-purple-500' : 'border-transparent'
+                    selectedImage === index ? 'border-green-500' : 'border-transparent'
                   }`}
                 >
                   <ImageWithFallback
@@ -78,7 +78,7 @@ export function ProductDetail({
           <div className="flex items-start justify-between mb-4">
             <div>
               <h1 className="text-gray-900 mb-2">{product.title}</h1>
-              <p className="text-blue-600">${product.price.toFixed(2)}</p>
+              <p className="text-green-600">${product.price.toFixed(2)}</p>
             </div>
             <Button
               variant="ghost"

@@ -103,12 +103,12 @@ export function VerificationPage({ email, onVerified }: VerificationPageProps) {
             ) : (
               <div className="relative">
                 {/* Animated mail icon with gradient ring */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-xl opacity-30 animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-700 rounded-full blur-xl opacity-30 animate-pulse" />
                 <div className="relative bg-gray-100 rounded-full p-4">
                   {isChecking ? (
-                    <Loader2 className="w-16 h-16 text-blue-600 animate-spin" />
+                    <Loader2 className="w-16 h-16 text-green-600 animate-spin" />
                   ) : (
-                    <Mail className="w-16 h-16 text-blue-600" />
+                    <Mail className="w-16 h-16 text-green-600" />
                   )}
                 </div>
               </div>
@@ -136,14 +136,14 @@ export function VerificationPage({ email, onVerified }: VerificationPageProps) {
                 <p className="text-gray-700 font-medium">
                   We've sent a verification email to:
                 </p>
-                <p className="text-blue-600 font-semibold break-all">
+                <p className="text-green-600 font-semibold break-all">
                   {email}
                 </p>
                 <p className="text-gray-600 text-sm mt-4">
                   Please check your inbox and click the verification link.
                 </p>
                 {isChecking && (
-                  <p className="text-blue-600 text-sm mt-2 flex items-center justify-center gap-2">
+                  <p className="text-green-600 text-sm mt-2 flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Checking verification status...
                   </p>

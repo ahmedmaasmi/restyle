@@ -63,7 +63,7 @@ export function Navbar({ currentUser, onNavigate, onLogout, searchQuery, onSearc
                   onChange={(e) => onSearchChange(e.target.value)}
                   className="pl-4 pr-10 w-full rounded-full border-gray-300"
                 />
-                <button className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600">
+                <button className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-green-700 to-green-500 text-white rounded-full p-2 hover:from-green-800 hover:to-green-600">
                   <Search className="w-4 h-4" />
                 </button>
               </div>
@@ -102,7 +102,7 @@ export function Navbar({ currentUser, onNavigate, onLogout, searchQuery, onSearc
                       variant="outline"
                       size="sm"
                       onClick={() => onNavigate('admin')}
-                      className="flex items-center gap-1 text-sm border-blue-600 text-blue-600 hover:bg-blue-50"
+                      className="flex items-center gap-1 text-sm border-green-600 text-green-600 hover:bg-green-50"
                     >
                       <Shield className="w-4 h-4" />
                       Admin Dashboard
@@ -147,7 +147,7 @@ export function Navbar({ currentUser, onNavigate, onLogout, searchQuery, onSearc
             <div className="flex items-center gap-6">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 text-sm hover:text-blue-600">
+                  <button className="flex items-center gap-2 text-sm hover:text-green-600">
                     <Menu className="w-4 h-4" />
                     <span>Categories</span>
                     <ChevronDown className="w-4 h-4" />
@@ -175,18 +175,18 @@ export function Navbar({ currentUser, onNavigate, onLogout, searchQuery, onSearc
                 <button
                   key={category.id}
                   onClick={() => onCategoryClick(category.name)}
-                  className="text-sm text-gray-700 hover:text-blue-600 whitespace-nowrap"
+                  className="text-sm text-gray-700 hover:text-green-600 whitespace-nowrap"
                 >
                   {category.name}
                 </button>
               ))}
             </div>
             <div className="flex items-center gap-6">
-              <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+              <button className="flex items-center gap-2 text-sm text-green-600 hover:text-green-700">
                 <Gift className="w-4 h-4" />
                 <span>Best Deals</span>
               </button>
-              <button className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+              <button className="flex items-center gap-2 text-sm text-green-600 hover:text-green-700">
                 <Tv className="w-4 h-4" />
                 <span>ReStyle Live</span>
               </button>
@@ -206,7 +206,7 @@ export function Navbar({ currentUser, onNavigate, onLogout, searchQuery, onSearc
               onChange={(e) => onSearchChange(e.target.value)}
               className="pl-4 pr-10 w-full rounded-full"
             />
-            <button className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white rounded-full p-2">
+            <button className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-green-700 to-green-500 text-white rounded-full p-2 hover:from-green-800 hover:to-green-600">
               <Search className="w-4 h-4" />
             </button>
           </div>
@@ -219,12 +219,12 @@ export function Navbar({ currentUser, onNavigate, onLogout, searchQuery, onSearc
           <div className="px-4 py-4 space-y-3">
             <div className="space-y-2 pb-4 border-b border-gray-200">
               <p className="text-xs text-gray-500">Categories</p>
-              <button
+                <button
                 onClick={() => {
                   onCategoryClick('all');
                   setMobileMenuOpen(false);
                 }}
-                className="block w-full text-left text-sm py-2 hover:text-blue-600"
+                className="block w-full text-left text-sm py-2 hover:text-green-600"
               >
                 All Categories
               </button>
@@ -238,7 +238,7 @@ export function Navbar({ currentUser, onNavigate, onLogout, searchQuery, onSearc
                       onCategoryClick(category.name);
                       setMobileMenuOpen(false);
                     }}
-                    className="block w-full text-left text-sm py-2 hover:text-blue-600"
+                    className="block w-full text-left text-sm py-2 hover:text-green-600"
                   >
                     {category.name}
                   </button>

@@ -41,15 +41,15 @@ export function ProductCard({ product, onProductClick, onToggleFavorite }: Produ
         )}
       </div>
       <div className="p-4 space-y-2">
-        <h3 className="truncate text-gray-900 mb-1 font-medium group-hover:text-blue-600 transition-colors">
+        <h3 className="truncate text-gray-900 mb-1 font-medium group-hover:text-green-600 transition-colors">
           {product.title}
         </h3>
-        <p className="text-blue-600 mb-2 font-semibold text-lg">${product.price.toFixed(2)}</p>
+        <p className="text-green-600 mb-2 font-semibold text-lg">${product.price.toFixed(2)}</p>
         <div className="flex items-center gap-2">
           <img
             src={product.seller.avatar}
             alt={product.seller.name}
-            className="w-6 h-6 rounded-full ring-2 ring-gray-200 group-hover:ring-blue-400 transition-all duration-300"
+            className="w-6 h-6 rounded-full ring-2 ring-gray-200 group-hover:ring-green-400 transition-all duration-300"
           />
           <span className="text-gray-600 truncate text-sm">{product.seller.name}</span>
         </div>

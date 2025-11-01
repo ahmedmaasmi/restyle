@@ -57,7 +57,7 @@ export function HomePage({ products, onNavigate, onCategoryClick, onToggleFavori
                 Explore Popular Categories
               </SplitText>
               <button 
-                className="flex items-center gap-1 text-blue-600 hover:text-blue-700 transition-colors"
+                className="flex items-center gap-1 text-green-600 hover:text-green-700 transition-colors"
                 onClick={() => onNavigate('browse')}
               >
                 <span>View All</span>
@@ -80,7 +80,7 @@ export function HomePage({ products, onNavigate, onCategoryClick, onToggleFavori
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
                 </div>
-                <span className="text-sm text-gray-700 text-center group-hover:text-blue-600 transition-colors">
+                <span className="text-sm text-gray-700 text-center group-hover:text-green-600 transition-colors">
                   {category.name}
                 </span>
               </button>
@@ -98,7 +98,7 @@ export function HomePage({ products, onNavigate, onCategoryClick, onToggleFavori
                 Trending Now
               </SplitText>
               <button 
-                className="flex items-center gap-1 text-blue-600 hover:text-blue-700 transition-colors"
+                className="flex items-center gap-1 text-green-600 hover:text-green-700 transition-colors"
                 onClick={() => onNavigate('browse')}
               >
                 <span>View All</span>

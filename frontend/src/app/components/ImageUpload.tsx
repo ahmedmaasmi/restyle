@@ -117,7 +117,7 @@ export function ImageUpload({
       {/* Upload Area */}
       {!preview && (
         <div
-          className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition-colors"
+          className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-green-500 transition-colors"
           onClick={() => fileInputRef.current?.click()}
         >
           <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />

@@ -49,7 +49,7 @@ export function CartModal() {
                     <h3 className="font-semibold text-gray-900 truncate mb-1">
                       {item.product.title}
                     </h3>
-                    <p className="text-blue-600 font-semibold mb-2">
+                    <p className="text-green-600 font-semibold mb-2">
                       ${item.product.price.toFixed(2)}
                     </p>
                     <div className="flex items-center gap-3">

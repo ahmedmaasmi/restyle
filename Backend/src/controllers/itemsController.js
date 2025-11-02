@@ -122,8 +122,6 @@ exports.bulkInsertItemsForAccounts = async (req, res) => {
         });
       }
     }
-
-    // Insert items in batches
     const batchSize = 100;
     let totalInserted = 0;
     const insertedData = [];
